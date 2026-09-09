@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE_NAME="${IMAGE_TAG:-tester-env-awstats:dev}"
+RUN_SUFFIX="${RUN_ID:+-${RUN_ID}}"
+CONTAINER_NAME="tester-env-awstats${RUN_SUFFIX}"
+DATA_VOLUME="awstats-data${RUN_SUFFIX}"
+PORT="${PORT:-18180}"
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+URL="http://localhost:${PORT}/awstats/awstats.pl?config=tester-env&month=01&year=2025"
+
+say() { printf '==> %s\n' "$*"; }
+exists() { docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; }
+running() { docker container inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null | grep -qx true; }
+wait_for_http() { for _ in $(seq 1 30); do curl -fsS "$URL" >/dev/null && return; sleep 1; done; return 1; }
+
+deploy() {
+  if exists; then docker rm -f "$CONTAINER_NAME" >/dev/null; fi
+  say "building ${IMAGE_NAME} from source"
+  docker build -f "$ROOT/Dockerfile.tester-env" -t "$IMAGE_NAME" "$ROOT"
+  say "starting ${CONTAINER_NAME} at ${URL}"
+  docker run -d --name "$CONTAINER_NAME" -p "${PORT}:80" -v "${DATA_VOLUME}:/var/lib/awstats" "$IMAGE_NAME" >/dev/null
+  wait_for_http
+  seed
+}
+
+seed() {
+  say "building deterministic AWStats report"
+  docker exec "$CONTAINER_NAME" perl /opt/awstats/wwwroot/cgi-bin/awstats.pl -config=tester-env -update
+}
+
+verify() {
+  curl -fsS "$URL" | grep -q 'Statistics for analytics.example.test (2025-01)'
+  say "report is available at ${URL}"
+}
+
+stop() { if exists; then say "stopping ${CONTAINER_NAME}"; docker stop "$CONTAINER_NAME" >/dev/null; fi; }
+reset() { if exists; then docker rm -f "$CONTAINER_NAME" >/dev/null; fi; docker volume rm "$DATA_VOLUME" >/dev/null 2>&1 || true; say "removed ${CONTAINER_NAME} and ${DATA_VOLUME}"; }
+status() { if running; then printf '%s %s\n' "$CONTAINER_NAME" "$URL"; else printf '%s is not running\n' "$CONTAINER_NAME"; fi; }
+logs() { docker logs -f "$CONTAINER_NAME"; }
+help() { printf 'Usage: %s {deploy|reset|seed|verify|stop|status|logs|help}\nEnvironment: IMAGE_TAG, RUN_ID, PORT (default 18180)\n' "$0"; }
+
+case "${1:-help}" in
+  deploy) deploy ;;
+  reset) reset ;;
+  seed) seed ;;
+  verify) verify ;;
+  stop) stop ;;
+  status) status ;;
+  logs) logs ;;
+  help|-h|--help) help ;;
+  *) help >&2; exit 2 ;;
+esac

@@ -1,0 +1,8 @@
+198.51.100.10 - - [15/Jan/2025:09:00:00 +0000] "GET / HTTP/1.1" 200 1024 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+198.51.100.11 - - [15/Jan/2025:09:05:00 +0000] "GET /products HTTP/1.1" 200 2048 "https://search.example.test/?q=analytics" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15"
+198.51.100.10 - - [15/Jan/2025:09:08:00 +0000] "GET /products HTTP/1.1" 200 2048 "https://analytics.example.test/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+198.51.100.12 - - [16/Jan/2025:11:15:00 +0000] "GET /pricing HTTP/1.1" 200 1536 "https://analytics.example.test/products" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/121.0.0.0 Safari/537.36"
+198.51.100.12 - - [16/Jan/2025:11:17:00 +0000] "GET /assets/logo.svg HTTP/1.1" 200 512 "https://analytics.example.test/pricing" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/121.0.0.0 Safari/537.36"
+198.51.100.13 - - [17/Jan/2025:14:30:00 +0000] "GET /docs/getting-started HTTP/1.1" 200 4096 "https://news.example.test/awstats" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0"
+198.51.100.14 - - [17/Jan/2025:14:32:00 +0000] "GET /missing-page HTTP/1.1" 404 256 "https://analytics.example.test/docs/getting-started" "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1"
+198.51.100.13 - - [17/Jan/2025:14:35:00 +0000] "GET /docs/getting-started HTTP/1.1" 200 4096 "https://analytics.example.test/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0"

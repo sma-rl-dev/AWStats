@@ -1,0 +1,12 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends apache2 libjson-xs-perl libtry-tiny-perl perl && rm -rf /var/lib/apt/lists/*
+
+COPY . /opt/awstats
+COPY deployment/apache-awstats.conf /etc/apache2/conf-available/awstats.conf
+COPY deployment/awstats.tester-env.conf /etc/awstats/awstats.tester-env.conf
+
+RUN mkdir -p /etc/awstats /var/lib/awstats && chmod -R a+rX /opt/awstats && chmod +x /opt/awstats/wwwroot/cgi-bin/*.pl && chown www-data:www-data /var/lib/awstats && a2enmod cgid && a2enconf awstats
+
+EXPOSE 80
+CMD ["apachectl", "-D", "FOREGROUND"]
