@@ -14,3 +14,5 @@
 198.51.100.25 - - [19/Jan/2025:09:00:00 +0000] "GET /blog/yahoo-picks HTTP/1.1" 200 1536 "http://picks.yahoo.com/news/sample-article" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15"
 198.51.100.26 - - [19/Jan/2025:09:05:00 +0000] "GET /realtime/socket HTTP/1.1" 101 256 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
 198.51.100.27 - - [19/Jan/2025:09:10:00 +0000] "GET /downloads/annual-report.pdf HTTP/1.1" 206 512 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+198.51.100.28 - - [20/Jan/2025:10:00:00 +0000] "GET /fonts/app.woff2 HTTP/1.1" 200 1024 "https://analytics.example.test/blog/android-app" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+198.51.100.29 - - [20/Jan/2025:10:05:00 +0000] "GET /blocked-page HTTP/1.1" 451 512 "https://analytics.example.test/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
