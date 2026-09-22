@@ -54,12 +54,22 @@ Environment: `IMAGE_TAG` (content-addressed tag, defaults to `tester-env-awstats
 ./tester-env seed
 ```
 
-- Fixed eight-line combined-log fixture at `deployment/access.log`
-  (January 15–17, 2025; five client addresses; homepage/product/pricing/docs traffic;
-  two external referrers; three browser families; one normal 404).
+- Fixed sixteen-line combined-log fixture at `deployment/access.log`
+  (January 15–19, 2025; deterministic IPs, dates, UAs, referrers, statuses).
+  Lines 1–8 (Jan 15–17): homepage/product/pricing/docs traffic, two external
+  referrers, three browser families, one normal 404; top tied pages
+  `/products` x2 and `/docs/getting-started` x2.
+  Lines 9–16 (Jan 18–19, one line each): `.webp` asset hit (NotPageList),
+  GPTBot robot hit, authenticated `user1` hit, Edge/12.10136 hit, Android 13
+  hit, `picks.yahoo.com` referrer hit, HTTP 101 hit, HTTP 206 + Googlebot hit
+  on `/downloads/annual-report.pdf` (download extension so the 206 takes the
+  robot-detection path).
+- Site config `deployment/awstats.tester-env.conf` sets
+  `ShowAuthenticatedUsers=PHBL` so the seeded login row is visible.
 - `seed` runs `awstats.pl -update` for config `tester-env` (SiteDomain
   `analytics.example.test`, `DirData=/var/lib/awstats`).
-- Report totals: 4 unique visitors, 4 visits, 6 pages, 7 hits, 15.00 KB.
+- Report totals: 8 unique visitors, 8 visits, 10 pages, 12 hits, 23.00 KB.
+  February 2025 remains empty.
 
 ## Verify
 
