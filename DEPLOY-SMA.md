@@ -23,9 +23,9 @@ From the fork checkout root (`apps/awstats/` when used as a tester-env submodule
 
 | Command | Description |
 |---------|-------------|
-| `deploy` | Build `Dockerfile.tester-env` from editable source, start container, build report |
-| `seed` | Re-run `awstats.pl -config=tester-env -update` inside the container |
-| `verify` | Assert the report page contains `Statistics for analytics.example.test (2025-01)` |
+| `deploy` | Build `Dockerfile.tester-env` from editable source, start container, build month/day/hour databases |
+| `seed` | Clear `/var/lib/awstats/awstats*.txt` and re-run native `awstats.pl -update` for `month` (default), `-databasebreak=day`, and `-databasebreak=hour` |
+| `verify` | Assert the report page contains `Statistics for analytics.example.test (2025-01)` and the month (`awstats012025`), Day 15 (`awstats01202515`), and Jan-18-hour-10 (`awstats0120251810`) history files exist and are non-empty |
 | `reset` | Remove container and data volume (`awstats-data[-<RUN_ID>]`); never removes the image |
 | `stop` | Stop container (preserves data volume) |
 | `logs` | Tail container logs |
@@ -54,8 +54,8 @@ Environment: `IMAGE_TAG` (content-addressed tag, defaults to `tester-env-awstats
 ./tester-env seed
 ```
 
-- Fixed sixteen-line combined-log fixture at `deployment/access.log`
-  (January 15–19, 2025; deterministic IPs, dates, UAs, referrers, statuses).
+- Fixed eighteen-line combined-log fixture at `deployment/access.log`
+  (January 15–20, 2025; deterministic IPs, dates, UAs, referrers, statuses).
   Lines 1–8 (Jan 15–17): homepage/product/pricing/docs traffic, two external
   referrers, three browser families, one normal 404; top tied pages
   `/products` x2 and `/docs/getting-started` x2.
@@ -64,12 +64,37 @@ Environment: `IMAGE_TAG` (content-addressed tag, defaults to `tester-env-awstats
   hit, `picks.yahoo.com` referrer hit, HTTP 101 hit, HTTP 206 + Googlebot hit
   on `/downloads/annual-report.pdf` (download extension so the 206 takes the
   robot-detection path).
+  Lines 17–18 (Jan 20): `.woff2` asset hit (NotPageList) and HTTP 451 hit
+  (renders with the legacy IIS label).
 - Site config `deployment/awstats.tester-env.conf` sets
   `ShowAuthenticatedUsers=PHBL` so the seeded login row is visible.
-- `seed` runs `awstats.pl -update` for config `tester-env` (SiteDomain
-  `analytics.example.test`, `DirData=/var/lib/awstats`).
-- Report totals: 8 unique visitors, 8 visits, 10 pages, 12 hits, 23.00 KB.
+- `seed` clears `/var/lib/awstats/awstats*.txt`, then runs three native
+  updates for config `tester-env` (SiteDomain
+  `analytics.example.test`, `DirData=/var/lib/awstats`):
+  `-update` (month database), `-databasebreak=day -update` (one history
+  file per day, Jan 15–20), `-databasebreak=hour -update` (one history
+  file per active hour: Jan-15-09, Jan-16-11, Jan-17-14, Jan-18-10,
+  Jan-19-09, Jan-20-10). Re-running `seed` reproduces identical totals
+  (each break reprocesses the full fixture exactly once; no double
+  counting). No fake HTML or hand-built databases; every history file is
+  produced by `awstats.pl` itself.
+- Report totals: 8 unique visitors, 8 visits, 10 pages, 13 hits, 24.00 KB.
   February 2025 remains empty.
+- Day/hour scopes are served from their native databases and carry
+  reduced nonzero totals: Day 15 (`databasebreak=day&day=15`) shows
+  2 visitors, 2 visits, 3 pages, 3 hits, 5.00 KB with 2 different
+  pages-url (`/products` x2, `/` x1), First/Last visit
+  15 Jan 2025 09:00–09:08; Jan-18 hour 10
+  (`databasebreak=hour&day=18&hour=10`) shows 3 visitors, 3 visits,
+  3 pages, 4 hits, 6.00 KB with 3 different pages-url
+  (`/account/profile`, `/blog/edge-release`, `/blog/android-app` x1 each;
+  the 10:00 `.webp` asset contributes a non-page hit and the 10:05 GPTBot
+  robot hit is not-viewed traffic), First/Last visit 18 Jan 2025 10:10–10:20.
+  The Reported period controls retain the selected granularity/day/hour and the hour selector
+  offers 0–23. Known native rendering fossil (no source change made):
+  the Summary period cell still reads `Month Jan 2025` in day/hour views;
+  scope is established by the controls, URL parameters, First/Last visit
+  range, and reduced nonzero totals.
 
 ## Verify
 

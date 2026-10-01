@@ -25,13 +25,16 @@ deploy() {
 }
 
 seed() {
-  say "building deterministic AWStats report"
-  docker exec "$CONTAINER_NAME" perl /opt/awstats/wwwroot/cgi-bin/awstats.pl -config=tester-env -update
+  say "building deterministic AWStats report (month/day/hour databases)"
+  docker exec "$CONTAINER_NAME" sh -c 'rm -f /var/lib/awstats/awstats*.txt && perl /opt/awstats/wwwroot/cgi-bin/awstats.pl -config=tester-env -update && perl /opt/awstats/wwwroot/cgi-bin/awstats.pl -config=tester-env -databasebreak=day -update && perl /opt/awstats/wwwroot/cgi-bin/awstats.pl -config=tester-env -databasebreak=hour -update'
 }
 
 verify() {
   curl -fsS "$URL" | grep -q 'Statistics for analytics.example.test (2025-01)'
-  say "report is available at ${URL}"
+  docker exec "$CONTAINER_NAME" test -s /var/lib/awstats/awstats012025.tester-env.txt
+  docker exec "$CONTAINER_NAME" test -s /var/lib/awstats/awstats01202515.tester-env.txt
+  docker exec "$CONTAINER_NAME" test -s /var/lib/awstats/awstats0120251810.tester-env.txt
+  say "report is available at ${URL} with month/day/hour databases"
 }
 
 stop() { if exists; then say "stopping ${CONTAINER_NAME}"; docker stop "$CONTAINER_NAME" >/dev/null; fi; }
